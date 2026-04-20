@@ -159,6 +159,23 @@ async def consistency_stream(req: schemas.ConsistencyRequest):
     return await _stream(services.run_consistency, req.model_dump())
 
 
+# ── OpenRouter model management ─────────────────────────────────────────────
+
+@app.get("/api/openrouter/models", tags=["OpenRouter"])
+async def openrouter_models():
+    """Return all free models available on OpenRouter."""
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(_executor, services.get_openrouter_free_models)
+
+
+@app.post("/api/openrouter/select", tags=["OpenRouter"])
+async def openrouter_select(body: dict):
+    """Test connection to a specific OpenRouter model and set it as active."""
+    model_id = body.get("model_id", "")
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(_executor, services.select_openrouter_model, model_id)
+
+
 @app.get("/", tags=["Meta"])
 def root():
     return {

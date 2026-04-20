@@ -137,10 +137,26 @@ export interface ConsistencyResponse {
   };
 }
 
+export interface OpenRouterModel {
+  id: string;
+  name: string;
+  context_length: number;
+}
+
+export interface SelectModelResponse {
+  success: boolean;
+  model: string;
+  reply?: string;
+  error?: string;
+}
+
 export interface HealthResponse {
   status: string;
   ollama_reachable: boolean;
   ollama_host: string;
   ollama_model: string;
   models_available: string[];
+  active_provider: string;
+  openrouter_configured: boolean;
+  openrouter_model: string;
 }

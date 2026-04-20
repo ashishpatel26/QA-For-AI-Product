@@ -24,6 +24,7 @@ import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import CircleIcon from "@mui/icons-material/Circle";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { api, type HealthResponse } from "../api";
+import ModelSelector from "../components/ModelSelector";
 
 const NAV = [
   { path: "/",            label: "Overview",     icon: <DashboardRoundedIcon /> },
@@ -53,7 +54,13 @@ export default function AppShell() {
     return () => clearInterval(id);
   }, []);
 
-  const online = !!health?.ollama_reachable;
+  const online = !!(health?.ollama_reachable || health?.openrouter_configured);
+  const isOpenRouter = health?.active_provider === "openrouter";
+  const [activeModel, setActiveModel] = useState<string>(health?.openrouter_model ?? "openai/gpt-4o-mini");
+
+  useEffect(() => {
+    if (health?.openrouter_model) setActiveModel(health.openrouter_model);
+  }, [health?.openrouter_model]);
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
@@ -86,8 +93,10 @@ export default function AppShell() {
           <Tooltip
             title={
               health
-                ? `${health.ollama_host} · ${health.ollama_model}`
-                : "Ollama status unknown"
+                ? isOpenRouter
+                  ? `OpenRouter · ${health.openrouter_model}`
+                  : `${health.ollama_host} · ${health.ollama_model}`
+                : "Provider status unknown"
             }
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -99,7 +108,11 @@ export default function AppShell() {
                 }}
               />
               <Typography variant="caption" color="text.secondary">
-                {online ? health?.ollama_model ?? "online" : "offline"}
+                {online
+                  ? isOpenRouter
+                    ? `OpenRouter (${health?.openrouter_model ?? ""})`
+                    : health?.ollama_model ?? "online"
+                  : "offline"}
               </Typography>
             </Box>
           </Tooltip>
@@ -182,15 +195,23 @@ export default function AppShell() {
           })}
         </List>
         <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.04)" }} />
+
+        {health?.openrouter_configured && (
+          <ModelSelector
+            currentModel={activeModel}
+            onModelChange={setActiveModel}
+          />
+        )}
+
         <Box sx={{ px: 3, pb: 3, mt: "auto" }}>
           <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
-            Model
+            {isOpenRouter ? "OpenRouter" : "Ollama"}
           </Typography>
           <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
-            {health?.ollama_model ?? "—"}
+            {isOpenRouter ? activeModel : health?.ollama_model ?? "—"}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {health?.ollama_host ?? ""}
+            {isOpenRouter ? "cloud · openrouter.ai" : health?.ollama_host ?? ""}
           </Typography>
         </Box>
       </Drawer>

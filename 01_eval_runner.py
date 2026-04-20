@@ -110,27 +110,27 @@ def run_eval(
 ) -> List[EvalResult]:
     """
     Run evaluation suite against a model.
-    
+
     Args:
         model_fn: Function that takes prompt, returns response
         test_cases: List of {input, expected, tags}
         scorer: Scoring function (actual, expected) -> 0.0-1.0
         pass_threshold: Score >= this = pass
-    
+
     Returns:
         List of EvalResult objects
     """
     results = []
-    
+
     for tc in test_cases:
         # Time the response
         start = time.time()
         response = model_fn(tc["input"])
         latency = (time.time() - start) * 1000  # ms
-        
+
         # Score it
         score = scorer(response, tc["expected"])
-        
+
         results.append(EvalResult(
             input=tc["input"],
             expected=tc["expected"],
@@ -140,7 +140,7 @@ def run_eval(
             tags=tc.get("tags", []),
             passed=score >= pass_threshold
         ))
-    
+
     return results
 
 
@@ -150,38 +150,40 @@ def run_eval(
 
 def print_report(results: List[EvalResult]) -> Dict[str, Any]:
     """Print evaluation report and return summary stats."""
-    
+
     print("\n" + "=" * 70)
     print("🦴 AI EVAL REPORT — CAVEMAN STYLE")
     print("=" * 70)
-    
+
     passed = sum(1 for r in results if r.passed)
     total = len(results)
     pass_rate = (passed / total) * 100 if total > 0 else 0
-    avg_latency = sum(r.latency_ms for r in results) / total if total > 0 else 0
-    
+    avg_latency = sum(r.latency_ms for r in results) / \
+        total if total > 0 else 0
+
     print(f"\n📊 SUMMARY:")
     print(f"   Total Tests:  {total}")
     print(f"   Passed:       {passed} ✓")
     print(f"   Failed:       {total - passed} ✗")
     print(f"   Pass Rate:    {pass_rate:.1f}%")
     print(f"   Avg Latency:  {avg_latency:.2f}ms")
-    
+
     print(f"\n📋 DETAILED RESULTS:")
     print("-" * 70)
-    
+
     for i, r in enumerate(results, 1):
         status = "✓ PASS" if r.passed else "✗ FAIL"
-        print(f"\n[{i}] {status} | Score: {r.score:.2f} | Latency: {r.latency_ms:.1f}ms")
+        print(
+            f"\n[{i}] {status} | Score: {r.score:.2f} | Latency: {r.latency_ms:.1f}ms")
         print(f"    Input:    {r.input[:50]}...")
         print(f"    Expected: {r.expected}")
         print(f"    Actual:   {r.actual[:60]}...")
         print(f"    Tags:     {', '.join(r.tags)}")
-    
+
     # Group by tags
     print(f"\n📊 RESULTS BY TAG:")
     print("-" * 70)
-    
+
     tag_stats = {}
     for r in results:
         for tag in r.tags:
@@ -190,14 +192,15 @@ def print_report(results: List[EvalResult]) -> Dict[str, Any]:
             tag_stats[tag]["total"] += 1
             if r.passed:
                 tag_stats[tag]["passed"] += 1
-    
+
     for tag, stats in tag_stats.items():
         rate = (stats["passed"] / stats["total"]) * 100
         bar = "█" * int(rate / 10) + "░" * (10 - int(rate / 10))
-        print(f"   {tag:15} {bar} {rate:.0f}% ({stats['passed']}/{stats['total']})")
-    
+        print(
+            f"   {tag:15} {bar} {rate:.0f}% ({stats['passed']}/{stats['total']})")
+
     print("\n" + "=" * 70)
-    
+
     return {
         "total": total,
         "passed": passed,
@@ -231,13 +234,13 @@ if __name__ == "__main__":
         scorer=score_contains,
         pass_threshold=0.5
     )
-    
+
     # Print report
     summary = print_report(results)
-    
+
     # Save results
     save_results(results)
-    
+
     # Exit with appropriate code
     if summary["pass_rate"] >= 80:
         print("\n✅ EVAL PASSED — Ready to deploy!")

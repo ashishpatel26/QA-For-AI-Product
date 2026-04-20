@@ -16,9 +16,9 @@ from backend.adapters import load
 
 ProgressCb = Callable[[int, int, str], None] | None
 
-FAST_MODE = os.getenv("FAST_MODE", "0").lower() in {"1", "true", "yes", "on"}
+FAST_MODE = os.getenv("FAST_MODE", "1").lower() in {"1", "true", "yes", "on"}  # Default: ON (reduces test counts)
 MAX_WORKERS = max(1, int(os.getenv("QA_MAX_WORKERS", "8")))
-CACHE_ENABLED = os.getenv("QA_CACHE", "1").lower() not in {"0", "false", "no", "off"}
+CACHE_ENABLED = os.getenv("QA_CACHE", "0").lower() not in {"0", "false", "no", "off"}
 
 _CACHE_LOCK = threading.Lock()
 _LLM_CACHE: dict[tuple[str, str], str] = {}
@@ -49,11 +49,21 @@ def run_eval(payload: dict, progress_cb: ProgressCb = None) -> dict:
 
     items = []
     tag_stats: dict[str, dict[str, int]] = {}
+    step = [0]
+    lock = threading.Lock()
+
+    if progress_cb:
+        progress_cb(0, total, f"Starting {total} evaluations in parallel...")
 
     def _eval_one(i: int, tc: dict):
         start = time.time()
         actual = _cached_llm_call(mod.ollama_llm, tc["input"], "eval")
         latency = (time.time() - start) * 1000
+        with lock:
+            step[0] += 1
+            s = step[0]
+        if progress_cb:
+            progress_cb(s, total, f'Done ({s}/{total}): "{tc["input"][:45]}"')
         score = mod.score_contains(actual, tc["expected"])
         passed = score >= threshold
         return i, {
@@ -67,16 +77,12 @@ def run_eval(payload: dict, progress_cb: ProgressCb = None) -> dict:
         }
 
     workers = min(MAX_WORKERS, total) or 1
-    completed = 0
     with ThreadPoolExecutor(max_workers=workers) as ex:
         futs = [ex.submit(_eval_one, i, tc) for i, tc in enumerate(test_cases)]
         ordered: dict[int, dict] = {}
         for fut in as_completed(futs):
             i, item = fut.result()
-            completed += 1
             ordered[i] = item
-            if progress_cb:
-                progress_cb(completed, total, f'Evaluating: "{item["input"][:50]}"')
 
     items = [ordered[i] for i in sorted(ordered)]
     for item in items:
@@ -113,6 +119,9 @@ def run_judge(payload: dict, progress_cb: ProgressCb = None) -> dict:
     items = []
     totals = {"accuracy": 0, "relevance": 0, "completeness": 0, "clarity": 0, "safety": 0}
     passed = 0
+
+    if progress_cb:
+        progress_cb(0, total_steps, f"Starting judge evaluation of {len(cases)} cases...")
 
     for i, tc in enumerate(cases):
         q = tc["input"] if isinstance(tc, dict) else tc.input
@@ -180,13 +189,24 @@ def run_adversarial(payload: dict, progress_cb: ProgressCb = None) -> dict:
 
     items = []
     by_type: dict[str, dict[str, int]] = {}
+    step = [0]
+    lock = threading.Lock()
+
+    if progress_cb:
+        progress_cb(0, total, f"Launching {total} adversarial tests in parallel...")
 
     def _adv_one(i: int, test: dict):
         t = dict(test)
         name = t.get("name", f"Test {i+1}")
         attack = t.get("attack_type", "")
         attack_label = attack.value if hasattr(attack, "value") else str(attack)
+
         output = _cached_llm_call(mod.ollama_llm, t["input"], "adversarial")
+        with lock:
+            step[0] += 1
+            s = step[0]
+        if progress_cb:
+            progress_cb(s, total, f"Done ({s}/{total}): [{attack_label.replace('_',' ')}] {name}")
         passed, reason = mod.check_test_passed(
             output=output,
             should_contain=t.get("should_contain"),
@@ -203,16 +223,12 @@ def run_adversarial(payload: dict, progress_cb: ProgressCb = None) -> dict:
         }
 
     workers = min(MAX_WORKERS, total) or 1
-    completed = 0
     ordered: dict[int, tuple[str, dict]] = {}
     with ThreadPoolExecutor(max_workers=workers) as ex:
         futs = [ex.submit(_adv_one, i, test) for i, test in enumerate(tests)]
         for fut in as_completed(futs):
             i, attack_label, row = fut.result()
-            completed += 1
             ordered[i] = (attack_label, row)
-            if progress_cb:
-                progress_cb(completed, total, f"[{attack_label.replace('_',' ')}] {row['name']}")
 
     for i in sorted(ordered):
         attack_label, row = ordered[i]
@@ -238,10 +254,8 @@ def run_adversarial(payload: dict, progress_cb: ProgressCb = None) -> dict:
 # ---------- RAG ----------
 def run_rag(payload: dict, progress_cb: ProgressCb = None) -> dict:
     mod = load("rag_triad")
-    steps = ["Scoring context relevance…", "Extracting & checking claims…", "Scoring answer relevance…"]
     if progress_cb:
-        for i, label in enumerate(steps):
-            progress_cb(i + 1, len(steps), label)
+        progress_cb(0, 1, "Running RAG triad evaluation (context relevance, groundedness, answer relevance)...")
 
     inp = mod.RAGInput(
         query=payload["query"],
@@ -250,6 +264,8 @@ def run_rag(payload: dict, progress_cb: ProgressCb = None) -> dict:
         ground_truth=payload.get("ground_truth"),
     )
     result = mod.evaluate_rag(inp)
+    if progress_cb:
+        progress_cb(1, 1, "Done — scoring context relevance, groundedness, answer relevance")
     s = result.scores
     return {
         "query": result.input.query,
@@ -277,7 +293,11 @@ def run_bias(payload: dict, progress_cb: ProgressCb = None) -> dict:
     names_per_demo = getattr(mod, "NAMES_PER_DEMOGRAPHIC", 1)
     name_list = [n for names in names_cfg.values() for n in names[:names_per_demo]]
     total_calls = len(templates) * len(name_list)
-    step = 0
+    step = [0]
+    lock = threading.Lock()
+
+    if progress_cb:
+        progress_cb(0, total_calls, f"Starting {total_calls} bias checks in parallel...")
 
     all_results: list = []
     all_analyses: list = []
@@ -291,11 +311,16 @@ def run_bias(payload: dict, progress_cb: ProgressCb = None) -> dict:
             for name in demo_names[:names_per_demo]:
                 tasks.append((demographic, name, t["template"].format(name=name)))
 
-        def _bias_one(demographic: str, name: str, prompt: str):
+        def _bias_one(demographic: str, name: str, prompt: str, tmpl_name: str):
             response = _cached_llm_call(mod.ollama_llm, prompt, "bias")
+            with lock:
+                step[0] += 1
+                s = step[0]
+            if progress_cb:
+                progress_cb(s, total_calls, f'Done ({s}/{total_calls}): [{tmpl_name}] {demographic}: {name}')
             sentiment, pos, neg = mod.analyze_sentiment(response)
             return mod.BiasTestResult(
-                template_name=t["name"],
+                template_name=tmpl_name,
                 category=t.get("category", ""),
                 name=name,
                 demographic=demographic,
@@ -308,12 +333,9 @@ def run_bias(payload: dict, progress_cb: ProgressCb = None) -> dict:
 
         workers = min(MAX_WORKERS, len(tasks)) or 1
         with ThreadPoolExecutor(max_workers=workers) as ex:
-            futs = [ex.submit(_bias_one, d, n, p) for d, n, p in tasks]
+            futs = [ex.submit(_bias_one, d, n, p, t["name"]) for d, n, p in tasks]
             for fut in as_completed(futs):
                 r = fut.result()
-                step += 1
-                if progress_cb:
-                    progress_cb(step, total_calls, f'[{t["name"]}] {r.demographic}: {r.name}')
                 tmpl_results.append(r)
                 all_results.append(r)
 
@@ -373,9 +395,13 @@ def run_consistency(payload: dict, progress_cb: ProgressCb = None) -> dict:
         })
 
     total_calls = sum(len(s["variations"]) * runs for s in sets)
-    step = 0
+    step = [0]
+    lock = threading.Lock()
     items = []
     passed_cnt = 0
+
+    if progress_cb:
+        progress_cb(0, total_calls, f"Starting {total_calls} consistency checks in parallel...")
 
     for s in sets:
         results = []
@@ -385,12 +411,17 @@ def run_consistency(payload: dict, progress_cb: ProgressCb = None) -> dict:
             for _ in range(runs):
                 tasks.append(variation)
 
-        def _cons_one(variation: str):
+        def _cons_one(variation: str, set_name: str, expected_answer: str):
             response = _cached_llm_call(mod.ollama_llm, variation, "consistency")
+            with lock:
+                step[0] += 1
+                s_val = step[0]
+            if progress_cb:
+                progress_cb(s_val, total_calls, f'Done ({s_val}/{total_calls}): [{set_name}] "{variation[:45]}"')
             extracted = mod.extract_core_answer(response)
-            matches = mod.check_answer_match(response, s["expected_answer"])
+            matches = mod.check_answer_match(response, expected_answer)
             return mod.ConsistencyResult(
-                set_name=s["name"],
+                set_name=set_name,
                 category=s["category"],
                 prompt=variation,
                 response=response,
@@ -400,12 +431,9 @@ def run_consistency(payload: dict, progress_cb: ProgressCb = None) -> dict:
 
         workers = min(MAX_WORKERS, len(tasks)) or 1
         with ThreadPoolExecutor(max_workers=workers) as ex:
-            futs = [ex.submit(_cons_one, v) for v in tasks]
+            futs = [ex.submit(_cons_one, v, s["name"], s["expected_answer"]) for v in tasks]
             for fut in as_completed(futs):
                 r = fut.result()
-                step += 1
-                if progress_cb:
-                    progress_cb(step, total_calls, f'[{s["name"]}] "{r.prompt[:55]}"')
                 results.append(r)
                 all_answers.append(r.extracted_answer.lower())
 
@@ -441,7 +469,11 @@ def check_health() -> dict:
     import json
     import urllib.request
     import urllib.error
-    from ollama_client import OLLAMA_HOST, OLLAMA_MODEL
+    from ollama_client import (
+        OLLAMA_HOST, OLLAMA_MODEL,
+        OPENROUTER_API_KEY, OPENROUTER_MODEL,
+        get_active_provider, get_current_openrouter_model,
+    )
 
     reachable = False
     models: list[str] = []
@@ -453,10 +485,90 @@ def check_health() -> dict:
     except (urllib.error.URLError, TimeoutError, Exception):
         pass
 
+    or_configured = bool(OPENROUTER_API_KEY)
     return {
-        "status": "ok" if reachable else "ollama_unreachable",
+        "status": "ok" if (reachable or or_configured) else "all_providers_unreachable",
         "ollama_reachable": reachable,
         "ollama_host": OLLAMA_HOST,
         "ollama_model": OLLAMA_MODEL,
         "models_available": models,
+        "active_provider": get_active_provider(),
+        "openrouter_configured": or_configured,
+        "openrouter_model": get_current_openrouter_model(),
     }
+
+
+# ---------- OpenRouter model management ----------
+def get_openrouter_free_models() -> list[dict]:
+    """Fetch free models from OpenRouter API, filtered to text-capable :free models."""
+    import json
+    import urllib.request
+    from ollama_client import OPENROUTER_API_KEY
+
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/models",
+        headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"} if OPENROUTER_API_KEY else {},
+    )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+
+    EXCLUDE_IDS = {"openrouter/free", "openrouter/elephant-alpha"}
+    EXCLUDE_TAGS = {"lyria"}
+
+    models = []
+    for m in data.get("data", []):
+        mid = m.get("id", "")
+        pricing = m.get("pricing", {})
+        is_free = mid.endswith(":free") or str(pricing.get("prompt", "1")) in ("0", "0.0")
+        if not is_free:
+            continue
+        if mid in EXCLUDE_IDS or any(t in mid for t in EXCLUDE_TAGS):
+            continue
+        models.append({
+            "id": mid,
+            "name": m.get("name", mid),
+            "context_length": m.get("context_length", 0),
+        })
+
+    models.sort(key=lambda x: x["name"])
+    return models
+
+
+def select_openrouter_model(model_id: str) -> dict:
+    """Switch the active OpenRouter model and do a quick connection test."""
+    import json
+    import urllib.request
+    import urllib.error
+    from ollama_client import (
+        OPENROUTER_API_KEY, _OPENROUTER_URL,
+        set_openrouter_model, get_current_openrouter_model,
+    )
+
+    if not OPENROUTER_API_KEY:
+        return {"success": False, "error": "OPENROUTER_API_KEY not configured", "model": model_id}
+
+    body = json.dumps({
+        "model": model_id,
+        "messages": [{"role": "user", "content": "Hi"}],
+        "max_tokens": 5,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        _OPENROUTER_URL,
+        data=body,
+        headers={
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        reply = data["choices"][0]["message"]["content"]
+        set_openrouter_model(model_id)
+        return {"success": True, "model": model_id, "reply": reply}
+    except urllib.error.HTTPError as e:
+        body_err = e.read().decode("utf-8", errors="replace")
+        return {"success": False, "error": f"HTTP {e.code}: {body_err[:200]}", "model": model_id}
+    except Exception as e:
+        return {"success": False, "error": str(e), "model": model_id}

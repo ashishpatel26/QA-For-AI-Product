@@ -173,3 +173,6 @@ class HealthResponse(BaseModel):
     ollama_host: str
     ollama_model: str
     models_available: list[str]
+    active_provider: str = "unknown"
+    openrouter_configured: bool = False
+    openrouter_model: str = ""
