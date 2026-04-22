@@ -103,8 +103,8 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Cookbook',
-              to: '/docs/cookbook',
+              label: 'Cookbook Overview',
+              to: '/docs/overview',
             },
           ],
         },

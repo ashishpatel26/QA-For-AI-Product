@@ -12,16 +12,16 @@ This cookbook is now organized as **topic-based Docusaurus docs pages**.
 
 ## Reading Path
 
-1. [Why AI QA is Broken](./01-why-ai-qa-is-broken)
-2. [6 Pillars of AI QA Testing](./02-six-pillars)
-3. [Defense-in-Depth Architecture](./03-defense-in-depth)
-4. [Real-World Attacks](./04-real-world-attacks)
-5. [RAG Evaluation & Scoring](./05-rag-evaluation-and-scoring)
-6. [Live Observability](./06-live-observability)
-7. [Advanced A/B Testing](./07-advanced-ab-testing)
-8. [Continuous Reliability Loop](./08-continuous-reliability-loop)
-9. [Tools & Practical Implementation](./09-tools-and-practical-implementation)
-10. [Key Takeaways](./10-key-takeaways)
+1. [Why AI QA is Broken](./why-ai-qa-is-broken)
+2. [6 Pillars of AI QA Testing](./six-pillars)
+3. [Defense-in-Depth Architecture](./defense-in-depth)
+4. [Real-World Attacks](./real-world-attacks)
+5. [RAG Evaluation & Scoring](./rag-evaluation-and-scoring)
+6. [Live Observability](./live-observability)
+7. [Advanced A/B Testing](./advanced-ab-testing)
+8. [Continuous Reliability Loop](./continuous-reliability-loop)
+9. [Tools & Practical Implementation](./tools-and-practical-implementation)
+10. [Key Takeaways](./key-takeaways)
 
 ## End-to-end QA Lifecycle
 
