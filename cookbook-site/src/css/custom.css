@@ -1,30 +1,519 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Neon Material Dark Theme
+ * AI QA Cookbook — ashishpatel26.github.io/QA-For-AI-Product
  */
 
-/* You can override the default Infima variables here. */
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ─── Neon Palette ──────────────────────────────────────────────────────────── */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --neon-cyan:    #00e5ff;
+  --neon-purple:  #7c4dff;
+  --neon-pink:    #ff4081;
+  --neon-green:   #00e676;
+  --neon-amber:   #ffab40;
+
+  --bg-base:      #080b12;
+  --bg-surface:   #0d1117;
+  --bg-elevated:  #161b27;
+  --bg-card:      #111827;
+  --bg-card-hover:#1a2235;
+
+  --border-subtle: rgba(0, 229, 255, 0.08);
+  --border-glow:   rgba(0, 229, 255, 0.25);
+
+  --text-primary:  #f0f4f8;
+  --text-secondary:#94a3b8;
+  --text-muted:    #4a5568;
+
+  /* Docusaurus overrides */
+  --ifm-color-primary:          var(--neon-cyan);
+  --ifm-color-primary-dark:     #00cce6;
+  --ifm-color-primary-darker:   #00b3cc;
+  --ifm-color-primary-darkest:  #0099b3;
+  --ifm-color-primary-light:    #26eaff;
+  --ifm-color-primary-lighter:  #40edff;
+  --ifm-color-primary-lightest: #73f2ff;
+
+  --ifm-background-color:        var(--bg-surface);
+  --ifm-background-surface-color: var(--bg-elevated);
+  --ifm-navbar-background-color: rgba(8, 11, 18, 0.92);
+  --ifm-footer-background-color: var(--bg-base);
+
+  --ifm-font-family-base: 'Inter', system-ui, sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', monospace;
+  --ifm-heading-font-family: 'Space Grotesk', 'Inter', sans-serif;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.75;
+
+  --ifm-code-font-size: 90%;
+  --ifm-code-background: rgba(0, 229, 255, 0.06);
+  --ifm-code-border-radius: 6px;
+
+  --ifm-link-color: var(--neon-cyan);
+  --ifm-link-hover-color: #73f2ff;
+
+  --ifm-navbar-height: 64px;
+  --ifm-navbar-shadow: 0 1px 0 0 rgba(0, 229, 255, 0.12);
+
+  --ifm-toc-border-color: var(--border-subtle);
+  --ifm-hr-border-color: var(--border-subtle);
+
+  --docusaurus-highlighted-code-line-bg: rgba(0, 229, 255, 0.07);
+
+  --ifm-breadcrumb-color-active: var(--neon-cyan);
+  --ifm-menu-color-active: var(--neon-cyan);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* Dark mode (same — we force dark globally) */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary:          var(--neon-cyan);
+  --ifm-color-primary-dark:     #00cce6;
+  --ifm-color-primary-darker:   #00b3cc;
+  --ifm-color-primary-darkest:  #0099b3;
+  --ifm-color-primary-light:    #26eaff;
+  --ifm-color-primary-lighter:  #40edff;
+  --ifm-color-primary-lightest: #73f2ff;
+  --ifm-background-color:        var(--bg-surface);
+  --ifm-background-surface-color: var(--bg-elevated);
+  --ifm-code-background: rgba(0, 229, 255, 0.07);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 229, 255, 0.1);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--ifm-font-family-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle grid overlay on body */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Navbar ────────────────────────────────────────────────────────────────── */
+.navbar {
+  background: rgba(8, 11, 18, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.1) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.navbar__brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.navbar__title {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.navbar__link {
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary) !important;
+  transition: color 0.2s ease;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: var(--neon-cyan) !important;
+}
+
+.navbar__logo {
+  filter: drop-shadow(0 0 6px var(--neon-cyan));
+}
+
+/* ─── Sidebar ───────────────────────────────────────────────────────────────── */
+.menu {
+  background: var(--bg-base) !important;
+  border-right: 1px solid var(--border-subtle);
+  padding: 0.5rem !important;
+}
+
+.menu__link {
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
+  padding: 0.45rem 0.75rem;
+}
+
+.menu__link:hover {
+  background: rgba(0, 229, 255, 0.06);
+  color: var(--neon-cyan);
+  text-decoration: none;
+}
+
+.menu__link--active {
+  background: rgba(0, 229, 255, 0.1) !important;
+  color: var(--neon-cyan) !important;
+  font-weight: 600;
+  border-left: 2px solid var(--neon-cyan);
+}
+
+.menu__caret::before {
+  border-color: var(--text-secondary);
+}
+
+.menu__list-item-collapsible:hover {
+  background: rgba(0, 229, 255, 0.04);
+}
+
+/* ─── TOC (right sidebar) ───────────────────────────────────────────────────── */
+.table-of-contents__link {
+  color: var(--text-muted);
+  font-size: 0.825rem;
+  transition: color 0.15s;
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: var(--neon-cyan);
+  text-decoration: none;
+}
+
+/* ─── Article / Doc content ─────────────────────────────────────────────────── */
+.markdown {
+  line-height: 1.8;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.markdown h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f0f4f8 0%, var(--neon-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.markdown h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.4rem;
+  margin-top: 2.5rem;
+}
+
+.markdown h2::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1.2em;
+  background: linear-gradient(var(--neon-cyan), var(--neon-purple));
+  border-radius: 2px;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+}
+
+.markdown h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--neon-cyan);
+  margin-top: 1.8rem;
+}
+
+.markdown h4 {
+  font-weight: 600;
+  color: var(--neon-purple);
+  font-size: 1rem;
+}
+
+/* Inline code */
+.markdown code {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  color: var(--neon-cyan);
+  border-radius: 5px;
+  padding: 0.15em 0.45em;
+  font-size: 0.875em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Code blocks */
+.prism-code,
+.codeBlockLines_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-Content-styles-module,
+pre[class*='language-'] {
+  background: #0d1117 !important;
+  border: 1px solid rgba(0, 229, 255, 0.12) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* Code block title bar */
+.codeBlockTitle_node_modules-\@docusaurus-theme-classic-lib-theme-CodeBlock-styles-module {
+  background: rgba(0, 229, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(0, 229, 255, 0.1) !important;
+  color: var(--neon-cyan) !important;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* Tables */
+.markdown table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  margin: 1.5rem 0;
+}
+
+.markdown table thead tr {
+  background: rgba(0, 229, 255, 0.08);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.markdown table thead th {
+  color: var(--neon-cyan);
+  font-size: 0.825rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.85rem 1rem;
+}
+
+.markdown table tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.15s;
+}
+
+.markdown table tbody tr:hover {
+  background: rgba(0, 229, 255, 0.04);
+}
+
+.markdown table tbody td {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Blockquotes */
+.markdown blockquote {
+  border-left: 3px solid var(--neon-purple);
+  background: rgba(124, 77, 255, 0.06);
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  color: var(--text-secondary);
+}
+
+/* Horizontal rule */
+.markdown hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  opacity: 0.2;
+  margin: 2rem 0;
+}
+
+/* Admonitions */
+.alert {
+  border-radius: 10px;
+  border-left-width: 3px;
+}
+
+.alert--info {
+  background: rgba(0, 229, 255, 0.07);
+  border-color: var(--neon-cyan);
+}
+
+.alert--warning {
+  background: rgba(255, 171, 64, 0.07);
+  border-color: var(--neon-amber);
+}
+
+.alert--danger {
+  background: rgba(255, 64, 129, 0.07);
+  border-color: var(--neon-pink);
+}
+
+.alert--success {
+  background: rgba(0, 230, 118, 0.07);
+  border-color: var(--neon-green);
+}
+
+/* Pagination */
+.pagination-nav__link {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.12);
+  text-decoration: none;
+}
+
+.pagination-nav__sublabel {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.pagination-nav__label {
+  color: var(--neon-cyan);
+  font-weight: 600;
+}
+
+/* ─── Mermaid diagrams ──────────────────────────────────────────────────────── */
+.docusaurus-mermaid-container {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+/* ─── Footer ────────────────────────────────────────────────────────────────── */
+.footer {
+  background: var(--bg-base) !important;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.footer__title {
+  color: var(--neon-cyan);
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.footer__link-item {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  transition: color 0.15s;
+}
+
+.footer__link-item:hover {
+  color: var(--neon-cyan);
+  text-decoration: none;
+}
+
+.footer__copyright {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 255, 0.4);
+}
+
+/* ─── Breadcrumbs ───────────────────────────────────────────────────────────── */
+.breadcrumbs__item--active .breadcrumbs__link {
+  color: var(--neon-cyan);
+  background: rgba(0, 229, 255, 0.08);
+}
+
+/* ─── Search ────────────────────────────────────────────────────────────────── */
+.navbar__search-input {
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.15);
+  color: var(--text-primary);
+  border-radius: 8px;
+}
+
+.navbar__search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ─── Badges in doc pages ────────────────────────────────────────────────────── */
+.badge {
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Doc article layout ────────────────────────────────────────────────────── */
+.docItemContainer_node_modules-\@docusaurus-theme-classic-lib-theme-DocItem-Layout-styles-module article {
+  padding: 0 1rem;
+}
+
+/* ─── Themed neon glow utility classes (used in JSX components) ─────────────── */
+.neon-text {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+}
+
+.neon-border {
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.08), inset 0 0 10px rgba(0, 229, 255, 0.03);
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+@keyframes scan-line {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
