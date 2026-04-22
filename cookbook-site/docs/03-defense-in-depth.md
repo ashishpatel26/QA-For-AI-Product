@@ -1,4 +1,5 @@
 ---
+id: defense-in-depth
 title: Defense-in-Depth Architecture
 description: How to build layered trust controls for AI systems — from macro governance frameworks to real-time production guardrails.
 ---

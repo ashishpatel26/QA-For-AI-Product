@@ -1,4 +1,5 @@
 ---
+id: key-takeaways
 title: Key Takeaways
 description: Core principles, the quality triangle, a final implementation checklist, and a practical path forward for building trustworthy AI products.
 ---

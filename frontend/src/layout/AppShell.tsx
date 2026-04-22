@@ -56,11 +56,8 @@ export default function AppShell() {
 
   const online = !!(health?.ollama_reachable || health?.openrouter_configured);
   const isOpenRouter = health?.active_provider === "openrouter";
-  const [activeModel, setActiveModel] = useState<string>(health?.openrouter_model ?? "openai/gpt-4o-mini");
-
-  useEffect(() => {
-    if (health?.openrouter_model) setActiveModel(health.openrouter_model);
-  }, [health?.openrouter_model]);
+  const [userSelectedModel, setUserSelectedModel] = useState<string | null>(null);
+  const activeModel = userSelectedModel ?? health?.openrouter_model ?? "openai/gpt-4o-mini";
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
@@ -199,7 +196,7 @@ export default function AppShell() {
         {health?.openrouter_configured && (
           <ModelSelector
             currentModel={activeModel}
-            onModelChange={setActiveModel}
+            onModelChange={setUserSelectedModel}
           />
         )}
 

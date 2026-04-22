@@ -1,4 +1,5 @@
 ---
+id: live-observability
 title: Live Observability for AI Systems
 description: A practical guide to instrumenting production LLM systems with session, trace, and span-level telemetry — from logging strategy to alerting and anomaly detection.
 ---

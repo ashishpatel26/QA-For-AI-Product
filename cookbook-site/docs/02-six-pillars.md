@@ -1,4 +1,5 @@
 ---
+id: six-pillars
 title: The 6 Pillars of AI QA Testing
 description: A complete taxonomy of what to test in LLM-powered systems — from functional correctness to safety, performance, and regression.
 ---

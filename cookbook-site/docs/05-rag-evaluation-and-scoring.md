@@ -1,4 +1,5 @@
 ---
+id: rag-evaluation-and-scoring
 title: RAG Evaluation & Scoring
 description: A complete practical guide to evaluating Retrieval-Augmented Generation systems — from the RAG Triad to scoring models, failure mode diagnosis, and automated eval pipelines.
 ---

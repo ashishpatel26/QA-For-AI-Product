@@ -1,4 +1,5 @@
 ---
+id: advanced-ab-testing
 title: Advanced A/B Testing for LLM Applications
 description: Beyond simple A/B splits — adaptive experimentation strategies, multi-armed bandits, contextual routing, and AI-specific experiment guardrails for production LLM systems.
 ---

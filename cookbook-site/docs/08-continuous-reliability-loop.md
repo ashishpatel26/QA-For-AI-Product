@@ -1,4 +1,5 @@
 ---
+id: continuous-reliability-loop
 title: Continuous Reliability Loop
 description: How to build and operate a closed-loop system that connects evals, observability, red teaming, and governance into a self-improving AI quality practice.
 ---

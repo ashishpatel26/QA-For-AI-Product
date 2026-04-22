@@ -1,4 +1,5 @@
 ---
+id: real-world-attacks
 title: Real-World Attacks on LLM Systems
 description: A practical red-team guide covering attack patterns, exploitation chains, and defensive countermeasures for production LLM applications.
 ---

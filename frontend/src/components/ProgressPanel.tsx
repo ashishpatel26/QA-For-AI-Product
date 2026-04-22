@@ -32,10 +32,10 @@ const pulse = keyframes`
 function useElapsed(running: boolean) {
   const [ms, setMs] = useState(0);
   useEffect(() => {
-    if (!running) { setMs(0); return; }
+    if (!running) return;
     const start = Date.now();
     const id = setInterval(() => setMs(Date.now() - start), 250);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); setMs(0); };
   }, [running]);
   return ms;
 }

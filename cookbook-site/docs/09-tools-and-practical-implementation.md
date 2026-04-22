@@ -1,4 +1,5 @@
 ---
+id: tools-and-practical-implementation
 title: Tools & Practical Implementation
 description: The complete engineering stack for AI QA — evaluation harnesses, observability platforms, security tools, CI/CD integration, and a step-by-step setup guide.
 ---

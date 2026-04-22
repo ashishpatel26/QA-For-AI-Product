@@ -1,4 +1,5 @@
 ---
+id: why-ai-qa-is-broken
 title: Why AI QA is Broken
 description: Understanding the accountability gap between traditional deterministic QA and the probabilistic reality of LLM systems.
 ---
