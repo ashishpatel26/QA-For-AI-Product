@@ -106,7 +106,7 @@ Different applications have different optimal positions on the triangle:
 | Application Type | Quality Priority | Cost Priority | Latency Priority |
 |---|---|---|---|
 | Medical diagnosis support | Critical — no hallucinations | Acceptable overhead | Moderate |
-| Real-time customer chat | High | Medium | Critical — <2s |
+| Real-time customer chat | High | Medium | Critical — under 2s |
 | Internal knowledge search | Medium | Critical — high volume | Low |
 | Legal document analysis | Very high | Low (low volume) | Low |
 | Code completion | High | Medium | Critical — IDE-speed |
