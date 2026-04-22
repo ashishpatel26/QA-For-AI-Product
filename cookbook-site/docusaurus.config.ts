@@ -9,6 +9,10 @@ const config: Config = {
   tagline: 'From Risk Frameworks to Live Observability',
   favicon: 'img/favicon.ico',
 
+  future: {
+    v4: true,
+  },
+
   // Set the production url of your site here
   url: 'https://ashishpatel26.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
